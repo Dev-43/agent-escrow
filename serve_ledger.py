@@ -6,6 +6,7 @@ Reads live audit records from Google Sheets (or local ledger) and serves ledger.
 import os
 import sys
 import json
+import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse
 from dotenv import load_dotenv
@@ -120,6 +121,13 @@ def get_live_ledger_data():
     return entries
 
 class LedgerHandler(SimpleHTTPRequestHandler):
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/ledger":
@@ -129,6 +137,26 @@ class LedgerHandler(SimpleHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps(data).encode("utf-8"))
+        elif parsed.path == "/api/config":
+            doc_id = os.getenv("DOC_ID", "1HuV_EGbyLadPlwPYWHDyjT9hIwWHEhG6HXzpXLyDYQ4")
+            sheet_id = os.getenv("SHEET_ID", "1ZMip-wiCSVPMa-e4Rufj6kobUh3V2Yvp7vK8AL4oX3g")
+            repo = os.getenv("GITHUB_REPO", "Dev-43/agent-escrow")
+            config = {
+                "google_doc_url": f"https://docs.google.com/document/d/{doc_id}/edit",
+                "google_sheet_url": f"https://docs.google.com/spreadsheets/d/{sheet_id}/edit",
+                "github_repo_url": f"https://github.com/{repo}",
+                "pr_1_url": f"https://github.com/{repo}/pull/1",
+                "pr_2_url": f"https://github.com/{repo}/pull/2",
+                "stripe_url": "https://dashboard.stripe.com/test/payments",
+                "repo": repo,
+                "doc_id": doc_id,
+                "sheet_id": sheet_id
+            }
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps(config).encode("utf-8"))
         elif parsed.path == "/" or parsed.path == "/index.html":
             if os.path.exists("frontend/ledger.html"):
                 self.path = "/frontend/ledger.html"
@@ -137,6 +165,47 @@ class LedgerHandler(SimpleHTTPRequestHandler):
             return super().do_GET()
         else:
             return super().do_GET()
+
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/verify":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            try:
+                payload = json.loads(body)
+            except Exception:
+                payload = {}
+
+            pr_number = payload.get("pr_number")
+            fixture = payload.get("fixture")
+            task_id = payload.get("task_id")
+
+            pr_num_int = int(pr_number) if pr_number else 1
+            if not task_id:
+                task_id = f"task_pr_{pr_num_int:03d}_{int(time.time())}"
+
+            import agentescrow
+            try:
+                result = agentescrow.run_pipeline(
+                    task_id=task_id,
+                    fixture_path=fixture,
+                    amount_cents=5000,
+                    pr_number=pr_num_int
+                )
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True, "result": result}).encode("utf-8"))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode("utf-8"))
+        else:
+            self.send_response(404)
+            self.end_headers()
 
 def run_server():
     server_address = ("", PORT)

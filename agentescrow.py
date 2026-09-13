@@ -581,6 +581,7 @@ def run_pipeline(
     task_id: str = "task_0042",
     fixture_path: Optional[str] = None,
     amount_cents: int = 5000,
+    pr_number: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Full end-to-end execution of the AgentEscrow pipeline:
@@ -599,7 +600,10 @@ def run_pipeline(
     doc_id = os.getenv("DOC_ID")
     github_token = os.getenv("GITHUB_TOKEN")
     repo = os.getenv("GITHUB_REPO", "owner/repo")
-    pr_num = int(os.getenv("GITHUB_PR_NUMBER", "42"))
+    if pr_number is not None:
+        pr_num = pr_number
+    else:
+        pr_num = int(os.getenv("GITHUB_PR_NUMBER", "42"))
 
     criteria = fetch_acceptance_criteria(doc_id, sa_json)
     agreement: TaskAgreement = {
