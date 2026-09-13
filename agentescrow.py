@@ -101,20 +101,25 @@ def deterministic_gate(result: VerificationResult) -> GateDecision:
 def get_google_credentials(scopes: List[str], sa_json_path: Optional[str] = None):
     """
     Loads Google credentials from:
-    1. Raw JSON string in GOOGLE_SERVICE_ACCOUNT_JSON_RAW (ideal for Render/cloud deployment)
+    1. Raw JSON string in GOOGLE_SERVICE_ACCOUNT_JSON_RAW or GOOGLE_SERVICE_ACCOUNT_JSON
     2. Service account JSON file path (sa_json_path or GOOGLE_SERVICE_ACCOUNT_JSON)
     """
     raw_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_RAW")
+    if not raw_json:
+        val = (os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") or "").strip()
+        if val.startswith("{"):
+            raw_json = val
+
     if raw_json and raw_json.strip():
         try:
             from google.oauth2 import service_account
             info = json.loads(raw_json)
             return service_account.Credentials.from_service_account_info(info, scopes=scopes)
         except Exception as e:
-            print(f"[WARN] Failed loading from GOOGLE_SERVICE_ACCOUNT_JSON_RAW: {e}")
+            print(f"[WARN] Failed loading from Google Service Account JSON string: {e}")
 
     path = sa_json_path or os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "service_account.json")
-    if path and os.path.exists(path):
+    if path and not path.strip().startswith("{") and os.path.exists(path):
         try:
             from google.oauth2 import service_account
             return service_account.Credentials.from_service_account_file(path, scopes=scopes)
