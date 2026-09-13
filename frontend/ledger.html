@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentEscrow — Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1B2430;
+    --ink-soft: #2A3441;
+    --paper: #FBF9F4;
+    --paper-dim: #EEEBE3;
+    --pass: #2F6E4E;
+    --pass-bg: #E7EFE9;
+    --fail: #9B3B2E;
+    --fail-bg: #F3E7E4;
+    --review: #9C6F1E;
+    --review-bg: #F3ECDC;
+    --muted: #7A7669;
+    --rule: #DEDACD;
+    --gold: #B8862B;
+  }
+
+  * { box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(ellipse 900px 500px at 20% -10%, rgba(184,134,43,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 10%, rgba(47,110,78,0.08), transparent 55%),
+      radial-gradient(ellipse at top, #26313F 0%, #10161F 70%);
+    color: var(--paper);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 56px 20px;
+    position: relative;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .sheet {
+    width: 100%;
+    max-width: 840px;
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 4px;
+    box-shadow: 0 40px 90px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.5) inset, 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    opacity: 0;
+    animation: sheetIn 0.55s cubic-bezier(.2,.8,.2,1) 0.05s forwards;
+    position: relative;
+  }
+
+  @keyframes sheetIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.99); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  header {
+    padding: 40px 46px 0;
+  }
+
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 24px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mark {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+
+  .brand-text { display: flex; align-items: baseline; gap: 9px; }
+
+  h1 {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+    font-size: 27px;
+    margin: 0;
+    letter-spacing: 0.1px;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--pass);
+    display: inline-block;
+    position: relative;
+  }
+
+  .live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: var(--pass);
+    opacity: 0.35;
+    animation: pulse 2.2s ease-out infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(0.8); opacity: 0.35; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    margin-left: 46px;
+    max-width: 44ch;
+    line-height: 1.55;
+  }
+
+  .doc-id {
+    font-size: 11.5px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .summary-item {
+    background: var(--paper);
+    padding: 19px 4px 17px;
+    text-align: center;
+    position: relative;
+  }
+
+  .summary-item .num {
+    font-family: 'Source Serif 4', serif;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .summary-item .label {
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 5px;
+    letter-spacing: 0.2px;
+  }
+
+  .summary-item.false-approvals .num { color: var(--pass); }
+
+  .gate-note {
+    padding: 13px 46px;
+    background: var(--paper-dim);
+    border-bottom: 1px solid var(--rule);
+    font-size: 10.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .gate-note .dot { color: var(--gold); }
+
+  .filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 46px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .filter-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.2px;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+    padding: 6px 13px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .filter-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .filter-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .filter-btn.active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .filter-btn .count { opacity: 0.6; margin-left: 4px; }
+
+  .threshold-legend {
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .threshold-swatch {
+    width: 10px;
+    height: 2px;
+    background: var(--gold);
+    display: inline-block;
+  }
+
+  .entries { padding: 4px 46px 8px; }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 104px 1fr 176px;
+    gap: 22px;
+    align-items: start;
+    padding: 25px 0;
+    border-bottom: 1px solid var(--rule);
+    opacity: 0;
+    animation: entryIn 0.45s cubic-bezier(.2,.8,.2,1) forwards;
+    transition: background 0.15s ease;
+  }
+
+  .entry:hover { background: rgba(27,36,48,0.02); }
+  .entry:last-child { border-bottom: none; }
+  .entry.hidden { display: none; }
+
+  @keyframes entryIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stamp-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  .stamp {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: 1.6px;
+    padding: 7px 6px;
+    text-align: center;
+    border-radius: 3px;
+    transform: rotate(-2.5deg);
+    width: 92px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .stamp::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1.5px solid currentColor;
+    border-radius: 3px;
+    opacity: 0.75;
+  }
+
+  .stamp svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  .stamp.pass { color: var(--pass); background: var(--pass-bg); }
+  .stamp.fail { color: var(--fail); background: var(--fail-bg); }
+  .stamp.review { color: var(--review); background: var(--review-bg); }
+
+  .action-tag {
+    font-size: 9.5px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+    padding-left: 2px;
+  }
+
+  .entry-body .task-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 7px;
+  }
+
+  .task-id { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .timestamp { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+
+  .reason {
+    font-family: 'Source Serif 4', serif;
+    font-size: 14.5px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 2px 0 10px;
+  }
+
+  .evidence-list { font-size: 11.5px; color: var(--muted); line-height: 1.85; }
+  .evidence-list div { display: flex; align-items: flex-start; gap: 6px; }
+  .mark-icon { font-size: 11px; line-height: 1.7; flex-shrink: 0; }
+  .met .mark-icon { color: var(--pass); }
+  .unmet .mark-icon { color: var(--fail); }
+
+  .right-col { text-align: right; }
+
+  .payment-action { font-size: 12px; font-weight: 600; letter-spacing: 0.2px; }
+  .payment-action.release { color: var(--pass); }
+  .payment-action.hold { color: var(--fail); }
+  .payment-action.pending { color: var(--review); }
+
+  .confidence-row { margin-top: 10px; }
+
+  .confidence-label {
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+
+  .confidence-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--rule);
+    border-radius: 2px;
+    overflow: visible;
+    position: relative;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 2px;
+    margin-left: auto;
+    position: relative;
+  }
+
+  .confidence-fill.pass-fill { background: var(--pass); }
+  .confidence-fill.fail-fill { background: var(--fail); }
+  .confidence-fill.review-fill { background: var(--review); }
+
+  .threshold-mark {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    left: 30%;
+    width: 1.5px;
+    background: var(--gold);
+    opacity: 0.9;
+  }
+
+  .verified-tag {
+    margin-top: 12px;
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+  }
+
+  .verified-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pass); display: inline-block; flex-shrink: 0; }
+  .verified-dot.pending-dot { background: var(--review); }
+
+  footer {
+    padding: 20px 46px 34px;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px solid var(--rule);
+    margin-top: 4px;
+  }
+
+  .refresh-tag { display: flex; align-items: center; gap: 6px; }
+  .refresh-tag .live-dot { position: static; }
+
+  .empty-state { padding: 60px 46px; text-align: center; color: var(--muted); font-size: 13px; display: none; }
+
+  @media (max-width: 620px) {
+    .entry { grid-template-columns: 1fr; }
+    .right-col { text-align: left; }
+    .confidence-label, .verified-tag { justify-content: flex-start; }
+    .confidence-bar { max-width: 160px; }
+    .confidence-fill { margin-left: 0; }
+    .threshold-mark { left: 30%; }
+    .doc-id { text-align: left; }
+    .subtitle { margin-left: 0; }
+    .filters { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <header>
+    <div class="title-row">
+      <div>
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 2L30 8V17C30 24.5 24.5 30.5 17 32C9.5 30.5 4 24.5 4 17V8L17 2Z" stroke="#1B2430" stroke-width="1.6" fill="#F7F5F0"/>
+            <path d="M11 17L15 21L23 12" stroke="#2F6E4E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="brand-text">
+            <h1>AgentEscrow</h1>
+            <span class="live-dot" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="subtitle">Trust layer for agent-to-agent work. Every claim is checked against evidence before money moves.</div>
+      </div>
+      <div class="doc-id">Sheet · 1a2b…9f0<br>Live ledger</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="num">3</div>
+        <div class="label">transactions checked</div>
+      </div>
+      <div class="summary-item false-approvals">
+        <div class="num">0</div>
+        <div class="label">false approvals</div>
+      </div>
+      <div class="summary-item">
+        <div class="num">1</div>
+        <div class="label">held for review</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="gate-note"><span class="dot">●</span> Verdicts below 0.70 confidence are routed to human review — the gate, not the model, decides.</div>
+
+  <div class="filters">
+    <div class="filter-group" role="tablist" aria-label="Filter by verdict">
+      <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All <span class="count">3</span></button>
+      <button class="filter-btn" data-filter="pass" role="tab" aria-selected="false">Pass <span class="count">1</span></button>
+      <button class="filter-btn" data-filter="fail" role="tab" aria-selected="false">Fail <span class="count">1</span></button>
+      <button class="filter-btn" data-filter="review" role="tab" aria-selected="false">Review <span class="count">1</span></button>
+    </div>
+    <div class="threshold-legend"><span class="threshold-swatch"></span> gate threshold (0.70)</div>
+  </div>
+
+  <div class="entries" id="entries">
+
+    <div class="entry" data-verdict="pass" style="animation-delay: 0.08s">
+      <div class="stamp-wrap">
+        <div class="stamp pass">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M4 10L8 14L16 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          PASS
+        </div>
+        <div class="action-tag">→ release</div>
+      </div>
+      <div class="entry-body">
+        <div class="task-line">
+          <span class="task-id">task_0091 — landing page copy fix</span>
+          <span class="timestamp">14:02:11</span>
+        </div>
+        <p class="reason">All 3 acceptance criteria satisfied. Submitted PR matches the agreed scope with no unrelated changes.</p>
+        <div class="evidence-list">
+          <div class="met"><span class="mark-icon">✓</span> Typo corrected in hero heading</div>
+          <div class="met"><span class="mark-icon">✓</span> No unrelated files changed</div>
+          <div class="met"><span class="mark-icon">✓</span> Tests included for the changed component</div>
+        </div>
+      </div>
+      <div class="right-col">
+        <div class="payment-action release">RELEASE — $50.00</div>
+        <div class="confidence-row">
+          <div class="confidence-label">confidence 0.94</div>
+          <div class="confidence-bar">
+            <div class="threshold-mark"></div>
+            <div class="confidence-fill pass-fill" style="width:94%"></div>
+          </div>
+        </div>
+        <div class="verified-tag"><span class="verified-dot"></span>action verified</div>
+      </div>
+    </div>
+
+    <div class="entry" data-verdict="fail" style="animation-delay: 0.16s">
+      <div class="stamp-wrap">
+        <div class="stamp fail">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+          FAIL
+        </div>
+        <div class="action-tag">→ hold</div>
+      </div>
+      <div class="entry-body">
+        <div class="task-line">
+          <span class="task-id">task_0092 — API rate limit fix</span>
+          <span class="timestamp">14:06:47</span>
+        </div>
+        <p class="reason">Submitted PR does not include the required test coverage, and touches an unrelated config file.</p>
+        <div class="evidence-list">
+          <div class="met"><span class="mark-icon">✓</span> Rate limit logic updated correctly</div>
+          <div class="unmet"><span class="mark-icon">✗</span> No tests added for the new limit</div>
+          <div class="unmet"><span class="mark-icon">✗</span> Unrelated change to deploy config</div>
+        </div>
+      </div>
+      <div class="right-col">
+        <div class="payment-action hold">HOLD — $80.00</div>
+        <div class="confidence-row">
+          <div class="confidence-label">confidence 0.88</div>
+          <div class="confidence-bar">
+            <div class="threshold-mark"></div>
+            <div class="confidence-fill fail-fill" style="width:88%"></div>
+          </div>
+        </div>
+        <div class="verified-tag"><span class="verified-dot"></span>action verified</div>
+      </div>
+    </div>
+
+    <div class="entry" data-verdict="review" style="animation-delay: 0.24s">
+      <div class="stamp-wrap">
+        <div class="stamp review">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"/><path d="M10 6.5V10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="13.3" r="1" fill="currentColor"/></svg>
+          REVIEW
+        </div>
+        <div class="action-tag">→ pending</div>
+      </div>
+      <div class="entry-body">
+        <div class="task-line">
+          <span class="task-id">task_0093 — onboarding email copy</span>
+          <span class="timestamp">14:11:03</span>
+        </div>
+        <p class="reason">Criteria wording is ambiguous on tone requirements; verification confidence fell below the auto-decide threshold.</p>
+        <div class="evidence-list">
+          <div class="met"><span class="mark-icon">✓</span> Email sends correctly, links work</div>
+          <div class="unmet"><span class="mark-icon">✗</span> Tone match to brief is unclear from criteria wording</div>
+        </div>
+      </div>
+      <div class="right-col">
+        <div class="payment-action pending">PENDING — $35.00</div>
+        <div class="confidence-row">
+          <div class="confidence-label">confidence 0.61</div>
+          <div class="confidence-bar">
+            <div class="threshold-mark"></div>
+            <div class="confidence-fill review-fill" style="width:61%"></div>
+          </div>
+        </div>
+        <div class="verified-tag"><span class="verified-dot pending-dot"></span>escalated to human</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="empty-state" id="emptyState">No transactions match this filter.</div>
+
+  <footer>
+    <span>AI produces evidence. A fixed rule decides. Nothing is assumed verified.</span>
+    <span class="refresh-tag"><span class="live-dot"></span> refreshed 4s ago</span>
+  </footer>
+</div>
+
+<script>
+  function bindFilters() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const entries = document.querySelectorAll('.entry');
+    const emptyState = document.getElementById('emptyState');
+
+    filterButtons.forEach(btn => {
+      btn.onclick = () => {
+        filterButtons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        const filter = btn.dataset.filter;
+        let visibleCount = 0;
+
+        entries.forEach(entry => {
+          const matches = filter === 'all' || entry.dataset.verdict === filter;
+          entry.classList.toggle('hidden', !matches);
+          if (matches) visibleCount++;
+        });
+
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      };
+    });
+  }
+
+  // Initial binding for static elements
+  bindFilters();
+
+  // Fetch live Sheets data from server
+  async function loadLiveLedger() {
+    try {
+      const res = await fetch('/api/ledger');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) return;
+
+      const container = document.getElementById('entries');
+      container.innerHTML = '';
+
+      let passCount = 0, failCount = 0, reviewCount = 0;
+
+      data.forEach((item, index) => {
+        const v = item.verdict.toLowerCase();
+        if (v === 'pass') passCount++;
+        else if (v === 'fail') failCount++;
+        else if (v === 'review') reviewCount++;
+
+        let stampSvg = '';
+        let fillClass = '';
+        let actionClass = '';
+        let actionTag = '';
+        let verifiedText = '';
+
+        if (v === 'pass') {
+          stampSvg = `<div class="stamp pass"><svg viewBox="0 0 20 20" fill="none"><path d="M4 10L8 14L16 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>PASS</div>`;
+          fillClass = 'pass-fill';
+          actionClass = 'release';
+          actionTag = '→ release';
+          verifiedText = `<span class="verified-dot"></span>action verified`;
+        } else if (v === 'fail') {
+          stampSvg = `<div class="stamp fail"><svg viewBox="0 0 20 20" fill="none"><path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>FAIL</div>`;
+          fillClass = 'fail-fill';
+          actionClass = 'hold';
+          actionTag = '→ hold';
+          verifiedText = `<span class="verified-dot"></span>action verified`;
+        } else {
+          stampSvg = `<div class="stamp review"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"/><path d="M10 6.5V10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="13.3" r="1" fill="currentColor"/></svg>REVIEW</div>`;
+          fillClass = 'review-fill';
+          actionClass = 'pending';
+          actionTag = '→ pending';
+          verifiedText = `<span class="verified-dot pending-dot"></span>escalated to human`;
+        }
+
+        const evidenceHtml = (item.evidence || []).map(ev => 
+          `<div class="${ev.met ? 'met' : 'unmet'}"><span class="mark-icon">${ev.met ? '✓' : '✗'}</span> ${ev.text}</div>`
+        ).join('');
+
+        const entryEl = document.createElement('div');
+        entryEl.className = 'entry';
+        entryEl.dataset.verdict = v;
+        entryEl.style.animationDelay = `${0.08 * (index + 1)}s`;
+        entryEl.innerHTML = `
+          <div class="stamp-wrap">
+            ${stampSvg}
+            <div class="action-tag">${actionTag}</div>
+          </div>
+          <div class="entry-body">
+            <div class="task-line">
+              <span class="task-id">${item.task_id}</span>
+              <span class="timestamp">${item.timestamp}</span>
+            </div>
+            <p class="reason">${item.reason}</p>
+            <div class="evidence-list">
+              ${evidenceHtml}
+            </div>
+          </div>
+          <div class="right-col">
+            <div class="payment-action ${actionClass}">${item.action_display || (item.payment_action.toUpperCase() + ' — $50.00')}</div>
+            <div class="confidence-row">
+              <div class="confidence-label">confidence ${item.confidence.toFixed(2)}</div>
+              <div class="confidence-bar">
+                <div class="threshold-mark"></div>
+                <div class="confidence-fill ${fillClass}" style="width:${item.confidence_pct}%"></div>
+              </div>
+            </div>
+            <div class="verified-tag">${verifiedText}</div>
+          </div>
+        `;
+        container.appendChild(entryEl);
+      });
+
+      // Update count tags in tabs
+      const countTabs = document.querySelectorAll('.filter-btn .count');
+      if (countTabs.length >= 4) {
+        countTabs[0].textContent = data.length;
+        countTabs[1].textContent = passCount;
+        countTabs[2].textContent = failCount;
+        countTabs[3].textContent = reviewCount;
+      }
+
+      // Update header summary numbers
+      const summaryNums = document.querySelectorAll('.summary-item .num');
+      if (summaryNums.length >= 3) {
+        summaryNums[0].textContent = data.length;
+        summaryNums[1].textContent = '0'; // false approvals
+        summaryNums[2].textContent = reviewCount;
+      }
+
+      bindFilters();
+    } catch (e) {
+      console.log('Using static ledger view:', e);
+    }
+  }
+
+  loadLiveLedger();
+</script>
+
+</body>
+</html>

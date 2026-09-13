@@ -4,6 +4,7 @@ BUILD_solo.md
 PREREQUISITES.md
 INTEGRATION.md
 ledger.html
+!frontend/ledger.html
 
 
 # Virtual Environment
