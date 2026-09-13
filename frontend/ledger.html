@@ -276,112 +276,7 @@
       border-color: #333;
     }
 
-    /* Custom PR input */
-    .pr-custom-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 4px 10px;
-    }
-    .pr-custom-box input {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      width: 44px;
-      text-align: center;
-      outline: none;
-    }
-    .pr-custom-box label {
-      font-size: 12px;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-    }
 
-    /* Custom Diff & Judge Simulator Drawer */
-    .custom-simulator-toggle {
-      margin-top: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12.5px;
-      color: var(--text-muted);
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      font-family: var(--font-ui);
-    }
-    .custom-simulator-toggle:hover { color: #fff; }
-    .custom-simulator-panel {
-      margin-top: 12px;
-      background: #080808;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      display: none;
-    }
-    .custom-simulator-panel.active { display: block; }
-    .simulator-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    @media (max-width: 768px) {
-      .simulator-grid { grid-template-columns: 1fr; }
-    }
-    .simulator-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .simulator-field label {
-      font-size: 11.5px;
-      font-family: var(--font-mono);
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-    }
-    .simulator-field textarea {
-      background: #0d0d0d;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: #e5e5e5;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      padding: 10px;
-      height: 110px;
-      resize: vertical;
-      outline: none;
-    }
-    .simulator-field textarea:focus { border-color: #333; }
-    .simulator-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 12px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .preset-chips {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .chip-btn {
-      font-size: 11px;
-      font-family: var(--font-mono);
-      background: #141414;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .chip-btn:hover { color: #fff; border-color: #444; }
 
     /* Pipeline Stepper */
     .stepper-container {
@@ -852,50 +747,6 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           Ambiguous (REVIEW)
         </button>
-
-        <div class="pr-custom-box">
-          <label for="customPrInput">PR #</label>
-          <input type="number" id="customPrInput" value="1" min="1" max="999">
-          <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 11.5px;" onclick="triggerCustomPR()">
-            Fetch
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Collapsible Judge / Custom Diff Simulator -->
-    <button class="custom-simulator-toggle" onclick="toggleSimulator()">
-      <span id="simulatorToggleIcon">▶</span>
-      <span>Inspect Arbitrary PR Diff / Custom Criteria Simulator (Judge Sandbox)</span>
-    </button>
-
-    <div class="custom-simulator-panel" id="simulatorPanel">
-      <div class="simulator-grid">
-        <div class="simulator-field">
-          <label>
-            <span>CUSTOM ACCEPTANCE CRITERIA (1 per line)</span>
-            <span style="color:var(--text-dim);">Google Doc Truth</span>
-          </label>
-          <textarea id="customCriteriaInput" placeholder="1. TokenBucketRateLimiter class implemented&#10;2. Rate limit middleware returns HTTP 429&#10;3. Unit test coverage for consume and refill&#10;4. Zero unapproved dependencies added"></textarea>
-        </div>
-        <div class="simulator-field">
-          <label>
-            <span>CUSTOM PR CODE DIFF / SUBMITTED WORK</span>
-            <span style="color:var(--text-dim);">GitHub Artifact</span>
-          </label>
-          <textarea id="customDiffInput" placeholder="Paste any unified git diff or implementation code to evaluate..."></textarea>
-        </div>
-      </div>
-      <div class="simulator-actions">
-        <div class="preset-chips">
-          <span style="font-size:11px; color:var(--text-dim); margin-right:4px;">Quick Pre-fills:</span>
-          <button class="chip-btn" onclick="prefillSimulator('pass')">Full Compliance</button>
-          <button class="chip-btn" onclick="prefillSimulator('missing_tests')">Missing Tests</button>
-          <button class="chip-btn" onclick="prefillSimulator('bad_dependency')">Unapproved Dep</button>
-        </div>
-        <button class="btn btn-secondary" style="font-size:12px; padding:6px 14px; border-color:var(--accent-border); color:var(--accent);" onclick="triggerCustomDiff()">
-          Execute Custom Verification & Safety Gate
-        </button>
       </div>
     </div>
 
@@ -1016,27 +867,7 @@
 <script>
   let isRunning = false;
 
-  function toggleSimulator() {
-    const p = document.getElementById('simulatorPanel');
-    const icon = document.getElementById('simulatorToggleIcon');
-    const isOpen = p.classList.toggle('active');
-    icon.textContent = isOpen ? '▼' : '▶';
-  }
 
-  function prefillSimulator(type) {
-    const critEl = document.getElementById('customCriteriaInput');
-    const diffEl = document.getElementById('customDiffInput');
-
-    critEl.value = `1. TokenBucketRateLimiter class implemented with capacity & refill\n2. Rate limit middleware enforces HTTP 429 status on depletion\n3. Comprehensive unit test suite covering consumption & refill math\n4. Zero unapproved external dependencies added`;
-
-    if (type === 'pass') {
-      diffEl.value = `diff --git a/api/rate_limiter.py b/api/rate_limiter.py\nnew file mode 100644\n+class TokenBucketRateLimiter:\n+    def __init__(self, capacity, refill_rate):\n+        self.capacity = capacity\n+        self.tokens = capacity\n+    def consume(self, amount=1.0):\n+        if self.tokens >= amount:\n+            self.tokens -= amount\n+            return True\n+        return False\n+def rate_limit(limiter):\n+    def decorator(fn):\n+        def wrapper(*args, **kwargs):\n+            if not limiter.consume():\n+                return {"error": "Rate limit exceeded"}, 429\n+            return fn(*args, **kwargs)\n+        return wrapper\n+    return decorator\n\ndiff --git a/tests/test_rate_limiter.py b/tests/test_rate_limiter.py\nnew file mode 100644\n+import unittest\n+class TestLimiter(unittest.TestCase):\n+    def test_consume(self):\n+        limiter = TokenBucketRateLimiter(5, 1.0)\n+        self.assertTrue(limiter.consume())`;
-    } else if (type === 'missing_tests') {
-      diffEl.value = `diff --git a/api/rate_limiter.py b/api/rate_limiter.py\nnew file mode 100644\n+class TokenBucketRateLimiter:\n+    def __init__(self, capacity):\n+        self.capacity = capacity\n\ndiff --git a/tests/test_rate_limiter.py b/tests/test_rate_limiter.py\nnew file mode 100644\n+# TODO: Add comprehensive unit tests here`;
-    } else if (type === 'bad_dependency') {
-      diffEl.value = `diff --git a/requirements.txt b/requirements.txt\n+unapproved-heavy-crypto==9.9.9\n\ndiff --git a/api/rate_limiter.py b/api/rate_limiter.py\n+import unapproved_heavy_crypto\n+class TokenBucketRateLimiter: pass`;
-    }
-  }
 
   async function loadConfig() {
     try {
@@ -1156,22 +987,6 @@
     executePipeline({ scenario: sc });
   }
 
-  function triggerCustomPR() {
-    const pr = parseInt(document.getElementById('customPrInput').value) || 1;
-    executePipeline({ pr_number: pr });
-  }
-
-  function triggerCustomDiff() {
-    const rawCrit = document.getElementById('customCriteriaInput').value;
-    const diff = document.getElementById('customDiffInput').value;
-    const critList = rawCrit.split('\n').map(c => c.trim()).filter(c => c.length > 0);
-    executePipeline({
-      custom_diff: diff,
-      custom_criteria: critList.length > 0 ? critList : null,
-      task_id: `task_sim_${Date.now()}`
-    });
-  }
-
   async function executePipeline(payload) {
     if (isRunning) return;
     isRunning = true;
@@ -1198,7 +1013,7 @@
     });
 
     steps[0].el.className = 'step-box active';
-    steps[0].status.textContent = payload.custom_criteria ? 'Reading custom criteria...' : 'Fetching Google Doc criteria...';
+    steps[0].status.textContent = 'Fetching Google Doc criteria...';
 
     try {
       const responsePromise = fetch('/api/verify', {
@@ -1211,7 +1026,7 @@
         steps[0].el.className = 'step-box success';
         steps[0].status.textContent = '✓ Criteria Loaded';
         steps[1].el.className = 'step-box active';
-        steps[1].status.textContent = payload.custom_diff ? 'Parsing diff artifact...' : 'Fetching PR diff from GitHub...';
+        steps[1].status.textContent = 'Fetching PR diff from GitHub...';
       }, 700);
 
       setTimeout(() => {
