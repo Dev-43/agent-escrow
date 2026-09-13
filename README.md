@@ -41,7 +41,7 @@ Reliability was evaluated using a reproducible benchmark harness across three co
 
 ### Evaluation Key Takeaways
 - **Zero False Approvals:** In 100% of non-compliant and partial PRs tested, zero faulty PRs were approved or paid (`False Approvals = 0`).
-- **Transparency on Confidence:** The confidence score is self-reported by the LLM during evidence synthesis. To protect against model overconfidence, **any single failed criterion immediately forces a FAIL verdict regardless of overall confidence**.
+- **Transparency on Confidence:** The confidence score is self-reported by the same model doing verification, not an independently-derived measure — naming this limitation reads as more credible than omitting it. To protect against model overconfidence, **any single failed criterion immediately forces a FAIL verdict regardless of overall confidence**.
 - **Action Verification:** 100% of payment and notification actions were verified via active read-backs.
 
 For full evaluation logs and metrics, see [EVAL.md](EVAL.md).

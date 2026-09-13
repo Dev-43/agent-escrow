@@ -138,13 +138,11 @@ def fetch_acceptance_criteria(doc_id: Optional[str], sa_json_path: Optional[str]
 
 def fetch_pr_content(repo: str, pr_number: int, github_token: Optional[str], fixture_path: Optional[str] = None) -> str:
     """
-    Fetches PR diff and description from GitHub API or a fixture file.
+    Fetches PR diff and description from GitHub REST API first,
+    falling back to fixture file if GitHub is unavailable or unconfigured.
     """
-    if fixture_path and os.path.exists(fixture_path):
-        with open(fixture_path, "r", encoding="utf-8") as f:
-            return f.read()
-
-    if github_token and repo and pr_number:
+    # 1. Live GitHub REST API fetch
+    if github_token and repo and repo != "owner/repo" and pr_number:
         import requests
         headers = {
             "Authorization": f"Bearer {github_token}",
@@ -154,14 +152,19 @@ def fetch_pr_content(repo: str, pr_number: int, github_token: Optional[str], fix
         url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
         try:
             res = requests.get(url, headers=headers, timeout=10)
-            if res.status_code == 200:
+            if res.status_code == 200 and res.text:
+                print(f"[INFO] Fetched live PR #{pr_number} from GitHub API ({len(res.text)} bytes).")
                 return res.text
             else:
-                print(f"[WARN] GitHub API returned status {res.status_code}: {res.text[:200]}")
+                print(f"[WARN] GitHub API returned status {res.status_code} ({url}). Falling back to local fixture.")
         except Exception as e:
-            print(f"[WARN] GitHub API request error: {e}")
+            print(f"[WARN] GitHub API request error ({e}). Falling back to local fixture.")
 
-    # Default fallback to pr_pass.md if present
+    # 2. Local Fixture Fallback
+    if fixture_path and os.path.exists(fixture_path):
+        with open(fixture_path, "r", encoding="utf-8") as f:
+            return f.read()
+
     default_fixture = os.path.join(os.path.dirname(__file__), "fixtures", "pr_pass.md")
     if os.path.exists(default_fixture):
         with open(default_fixture, "r", encoding="utf-8") as f:
@@ -379,28 +382,23 @@ def execute_stripe_action(decision: GateDecision, amount_cents: int, stripe_key:
         stripe.api_key = stripe_key
 
         try:
-            # 1. Create a PaymentIntent with manual capture (holding escrow funds)
+            # 1. Create a PaymentIntent with manual capture and confirmed test card (escrow hold)
             intent = stripe.PaymentIntent.create(
                 amount=amount_cents,
                 currency="usd",
                 capture_method="manual",
-                payment_method_types=["card"],
+                payment_method="pm_card_visa",
+                confirm=True,
+                return_url="https://example.com",
                 description=f"Escrow hold for task {task_id}",
                 metadata={"task_id": task_id, "verdict": decision["verdict"]},
             )
 
             # 2. Execute action based on deterministic decision
             if decision["payment_action"] == "release":
-                # For manual capture in test mode without confirmed card, cancel/confirm or capture
-                # In test mode, we capture or mark captured
-                try:
-                    captured = stripe.PaymentIntent.capture(intent.id)
-                except Exception:
-                    # In simulated test mode without customer card attached
-                    pass
-                # Read-back verification
+                captured = stripe.PaymentIntent.capture(intent.id)
                 retrieved = stripe.PaymentIntent.retrieve(intent.id)
-                verified = (retrieved.id == intent.id)
+                verified = (retrieved.status == "succeeded")
                 return {
                     "task_id": task_id,
                     "action": "stripe_capture",
@@ -424,13 +422,14 @@ def execute_stripe_action(decision: GateDecision, amount_cents: int, stripe_key:
                 }
             else: # pending_review
                 retrieved = stripe.PaymentIntent.retrieve(intent.id)
+                verified = (retrieved.status == "requires_capture")
                 return {
                     "task_id": task_id,
                     "action": "stripe_hold_pending",
                     "requested": True,
-                    "verified": True,
+                    "verified": verified,
                     "timestamp": timestamp,
-                    "details": f"PaymentIntent {intent.id} held uncaptured for manual human review."
+                    "details": f"PaymentIntent {intent.id} status={retrieved.status} (Escrow hold retained for human review)"
                 }
         except Exception as e:
             return {
