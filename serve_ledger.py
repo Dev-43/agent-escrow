@@ -92,7 +92,7 @@ def get_live_ledger_data():
     1. Demo_Ledger (live runs executed via web dashboard) - placed first
     2. Ledger (canonical 5 baseline benchmark runs) - kept frozen
     """
-    sheet_id = os.getenv("SHEET_ID")
+    sheet_id = os.getenv("SHEET_ID", "1ZMip-wiCSVPMa-e4Rufj6kobUh3V2Yvp7vK8AL4oX3g")
     entries = []
 
     try:

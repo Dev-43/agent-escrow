@@ -626,9 +626,9 @@ def run_pipeline(
 
     # 1. Context Collection
     sa_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "service_account.json")
-    doc_id = os.getenv("DOC_ID")
+    doc_id = os.getenv("DOC_ID", "1HuV_EGbyLadPlwPYWHDyjT9hIwWHEhG6HXzpXLyDYQ4")
     github_token = os.getenv("GITHUB_TOKEN")
-    repo = os.getenv("GITHUB_REPO", "owner/repo")
+    repo = os.getenv("GITHUB_REPO", "Dev-43/agent-escrow")
     if pr_number is not None:
         pr_num = pr_number
     else:
@@ -683,7 +683,7 @@ def run_pipeline(
     if slack_log["requested"]:
         print(f"      • Slack: {slack_log['action']} (verified={slack_log['verified']})")
 
-    sheet_id = os.getenv("SHEET_ID")
+    sheet_id = os.getenv("SHEET_ID", "1ZMip-wiCSVPMa-e4Rufj6kobUh3V2Yvp7vK8AL4oX3g")
     target_tab = ledger_tab or os.getenv("LEDGER_TAB", "Demo_Ledger")
     sheet_log = append_ledger_entry(decision, verification_res["confidence"], sheet_id, sa_json, stripe_log["verified"], tab_name=target_tab)
     print(f"      • Audit Ledger ({target_tab}): {sheet_log['action']} (verified={sheet_log['verified']})")
