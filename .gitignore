@@ -42,3 +42,6 @@ Thumbs.db
 *.mov
 *.webm
 *.mkv
+
+# Temporary & Scratch scripts
+scratch/

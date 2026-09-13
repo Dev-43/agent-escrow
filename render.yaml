@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: agent-escrow
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python serve_ledger.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PORT
+        value: 10000
+      - key: LEDGER_TAB
+        value: Demo_Ledger

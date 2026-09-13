@@ -98,18 +98,40 @@ def deterministic_gate(result: VerificationResult) -> GateDecision:
 # Context Collection (Google Docs & GitHub / Fixtures)
 # ==============================================================================
 
-def fetch_acceptance_criteria(doc_id: Optional[str], sa_json_path: Optional[str]) -> List[str]:
+def get_google_credentials(scopes: List[str], sa_json_path: Optional[str] = None):
+    """
+    Loads Google credentials from:
+    1. Raw JSON string in GOOGLE_SERVICE_ACCOUNT_JSON_RAW (ideal for Render/cloud deployment)
+    2. Service account JSON file path (sa_json_path or GOOGLE_SERVICE_ACCOUNT_JSON)
+    """
+    raw_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_RAW")
+    if raw_json and raw_json.strip():
+        try:
+            from google.oauth2 import service_account
+            info = json.loads(raw_json)
+            return service_account.Credentials.from_service_account_info(info, scopes=scopes)
+        except Exception as e:
+            print(f"[WARN] Failed loading from GOOGLE_SERVICE_ACCOUNT_JSON_RAW: {e}")
+
+    path = sa_json_path or os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "service_account.json")
+    if path and os.path.exists(path):
+        try:
+            from google.oauth2 import service_account
+            return service_account.Credentials.from_service_account_file(path, scopes=scopes)
+        except Exception as e:
+            print(f"[WARN] Failed loading from service account file {path}: {e}")
+
+    return None
+
+def fetch_acceptance_criteria(doc_id: Optional[str], sa_json_path: Optional[str] = None) -> List[str]:
     """
     Fetches acceptance criteria from Google Docs.
     Falls back to canonical task agreement criteria if doc_id/credentials unavailable.
     """
-    if doc_id and sa_json_path and os.path.exists(sa_json_path):
+    creds = get_google_credentials(["https://www.googleapis.com/auth/documents.readonly"], sa_json_path)
+    if doc_id and creds:
         try:
-            from google.oauth2 import service_account
             from googleapiclient.discovery import build
-            creds = service_account.Credentials.from_service_account_file(
-                sa_json_path, scopes=["https://www.googleapis.com/auth/documents.readonly"]
-            )
             service = build("docs", "v1", credentials=creds)
             doc = service.documents().get(documentId=doc_id).execute()
             content = doc.get("body", {}).get("content", [])
@@ -515,9 +537,16 @@ def execute_slack_notification(decision: GateDecision, result: VerificationResul
         "details": "Logged alert to console (SLACK_WEBHOOK_URL unset)."
     }
 
-def append_ledger_entry(decision: GateDecision, confidence: float, sheet_id: Optional[str], sa_json_path: Optional[str], action_verified: bool) -> ActionLog:
+def append_ledger_entry(
+    decision: GateDecision,
+    confidence: float,
+    sheet_id: Optional[str],
+    sa_json_path: Optional[str],
+    action_verified: bool,
+    tab_name: str = "Demo_Ledger"
+) -> ActionLog:
     """
-    Appends transaction record to Google Sheets Ledger tab:
+    Appends transaction record to Google Sheets tab (default: Demo_Ledger):
     [task_id, verdict, payment_action, confidence, timestamp, verified]
     """
     task_id = decision["task_id"]
@@ -531,18 +560,15 @@ def append_ledger_entry(decision: GateDecision, confidence: float, sheet_id: Opt
         action_verified
     ]
 
-    if sheet_id and sa_json_path and os.path.exists(sa_json_path):
+    creds = get_google_credentials(["https://www.googleapis.com/auth/spreadsheets"], sa_json_path)
+    if sheet_id and creds:
         try:
-            from google.oauth2 import service_account
             from googleapiclient.discovery import build
-            creds = service_account.Credentials.from_service_account_file(
-                sa_json_path, scopes=["https://www.googleapis.com/auth/spreadsheets"]
-            )
             service = build("sheets", "v4", credentials=creds)
             body = {"values": [row]}
             res = service.spreadsheets().values().append(
                 spreadsheetId=sheet_id,
-                range="Ledger!A:F",
+                range=f"{tab_name}!A:F",
                 valueInputOption="USER_ENTERED",
                 body=body
             ).execute()
@@ -555,12 +581,12 @@ def append_ledger_entry(decision: GateDecision, confidence: float, sheet_id: Opt
                 "requested": True,
                 "verified": verified,
                 "timestamp": timestamp,
-                "details": f"Appended row to Sheet {sheet_id} range {updates.get('updatedRange')}"
+                "details": f"Appended row to Sheet {sheet_id} tab '{tab_name}' range {updates.get('updatedRange')}"
             }
         except Exception as e:
             print(f"[WARN] Google Sheets append failed: {e}")
 
-    # Local fallback append to ledger.jsonl
+    # Local fallback append to ledger_local.jsonl
     with open("ledger_local.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(row) + "\n")
 
@@ -584,6 +610,7 @@ def run_pipeline(
     pr_number: Optional[int] = None,
     custom_diff: Optional[str] = None,
     custom_criteria: Optional[List[str]] = None,
+    ledger_tab: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Full end-to-end execution of the AgentEscrow pipeline:
@@ -657,8 +684,9 @@ def run_pipeline(
         print(f"      • Slack: {slack_log['action']} (verified={slack_log['verified']})")
 
     sheet_id = os.getenv("SHEET_ID")
-    sheet_log = append_ledger_entry(decision, verification_res["confidence"], sheet_id, sa_json, stripe_log["verified"])
-    print(f"      • Audit Ledger: {sheet_log['action']} (verified={sheet_log['verified']})")
+    target_tab = ledger_tab or os.getenv("LEDGER_TAB", "Demo_Ledger")
+    sheet_log = append_ledger_entry(decision, verification_res["confidence"], sheet_id, sa_json, stripe_log["verified"], tab_name=target_tab)
+    print(f"      • Audit Ledger ({target_tab}): {sheet_log['action']} (verified={sheet_log['verified']})")
 
     return {
         "agreement": agreement,

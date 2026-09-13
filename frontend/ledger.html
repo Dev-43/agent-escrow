@@ -610,6 +610,90 @@
       font-weight: 500;
     }
 
+    /* Cold Start & Live Status Banner (Requirement 1) */
+    .cold-start-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #0d1612;
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 12.5px;
+      color: #bbf7d0;
+      margin-bottom: 20px;
+      transition: all 0.5s ease;
+      font-family: var(--font-mono);
+    }
+    .cold-start-banner.connected {
+      background: #08100c;
+      border-color: rgba(0, 245, 155, 0.3);
+      color: var(--accent);
+    }
+    .cold-start-banner.hidden {
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      height: 0;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+    .spinner-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-ring 1.5s infinite ease-in-out;
+      flex-shrink: 0;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.7); opacity: 0.4; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 10px var(--accent); }
+      100% { transform: scale(0.7); opacity: 0.4; }
+    }
+
+    /* Rate Limit Toast (Requirement 4) */
+    .rate-limit-notice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 176, 32, 0.12);
+      border: 1px solid var(--review-border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+      color: #fde68a;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      transition: all 0.3s ease;
+    }
+    .rate-limit-notice.hidden {
+      display: none;
+    }
+
+    /* Demo vs Canonical Badges */
+    .source-tag {
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-left: 6px;
+    }
+    .source-tag.demo {
+      background: rgba(0, 245, 155, 0.15);
+      border: 1px solid rgba(0, 245, 155, 0.3);
+      color: var(--accent);
+    }
+    .source-tag.canon {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-dim);
+    }
+
     footer {
       margin-top: 40px;
       display: flex;
@@ -655,6 +739,12 @@
       </div>
     </div>
   </header>
+
+  <!-- Cold Start Cloud Status Banner (Requirement 1) -->
+  <div id="coldStartBanner" class="cold-start-banner">
+    <div class="spinner-dot" id="bannerSpinner"></div>
+    <span id="coldStartText">Connecting to AgentEscrow Cloud Gate... (Render free tier wakes in ~20-30s if idle)</span>
+  </div>
 
   <!-- Connected External Apps Toolbar -->
   <div class="connected-apps">
@@ -729,7 +819,7 @@
           Live Verification & Deterministic Gate Console
         </div>
         <div class="console-subtitle">
-          Test any scenario or custom input. The AI model extracts evidence; the deterministic gate decides payment.
+          Fixed canonical verification scenarios tested against live APIs. The AI model extracts evidence; the deterministic gate decides payment.
         </div>
       </div>
 
@@ -748,6 +838,12 @@
           Ambiguous (REVIEW)
         </button>
       </div>
+    </div>
+
+    <!-- Rate Limit Friendly Banner (Requirement 4) -->
+    <div id="rateLimitNotice" class="rate-limit-notice hidden">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="rateLimitMsg">Please wait a few seconds before running another verification.</span>
     </div>
 
     <!-- Stepper Tracker -->
@@ -867,7 +963,35 @@
 <script>
   let isRunning = false;
 
+  let coldStartTimer = setTimeout(() => {
+    const banner = document.getElementById('coldStartText');
+    if (banner) banner.textContent = "Render container waking from idle (~20-30s cold start on free tier)... Fetching live audit ledger...";
+  }, 4000);
 
+  function markConnected() {
+    clearTimeout(coldStartTimer);
+    const banner = document.getElementById('coldStartBanner');
+    const text = document.getElementById('coldStartText');
+    if (banner && text) {
+      banner.classList.add('connected');
+      text.textContent = "✓ Connected to Live Protocol & Google Sheets Audit";
+      setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3500);
+    }
+  }
+
+  function showRateLimitNotice(msg) {
+    const notice = document.getElementById('rateLimitNotice');
+    const txt = document.getElementById('rateLimitMsg');
+    if (notice && txt) {
+      txt.textContent = msg;
+      notice.classList.remove('hidden');
+      setTimeout(() => {
+        notice.classList.add('hidden');
+      }, 8000);
+    }
+  }
 
   async function loadConfig() {
     try {
@@ -931,6 +1055,7 @@
           <div class="entry-center">
             <div class="entry-meta">
               <span class="entry-task">${item.task_id}</span>
+              ${item.is_demo ? '<span class="source-tag demo">LIVE DEMO</span>' : '<span class="source-tag canon">CANONICAL</span>'}
               <span class="entry-time">${item.timestamp}</span>
             </div>
             <div class="entry-reason">${item.reason}</div>
@@ -959,6 +1084,7 @@
       document.getElementById('countFail').textContent = failCount;
       document.getElementById('countReview').textContent = reviewCount;
       bindFilterTabs();
+      markConnected();
     } catch(e) {}
   }
 
@@ -1040,8 +1166,13 @@
       const data = await res.json();
 
       if (!data.success) {
-        alert('Verification error: ' + (data.error || 'Pipeline execution failed'));
-        steps.forEach(s => { s.el.className = 'step-box'; s.status.textContent = 'Failed'; });
+        if (res.status === 429 || data.rate_limited) {
+          showRateLimitNotice(data.error || 'Please wait a few seconds before running another verification to preserve test quotas.');
+          steps.forEach(s => { s.el.className = 'step-box'; s.status.textContent = 'Rate limited (wait ~8s)'; });
+        } else {
+          showRateLimitNotice('Verification error: ' + (data.error || 'Pipeline execution failed'));
+          steps.forEach(s => { s.el.className = 'step-box'; s.status.textContent = 'Failed'; });
+        }
         return;
       }
 
