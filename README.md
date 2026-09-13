@@ -1,10 +1,17 @@
 # AgentEscrow 🛡️
 > **Autonomous Trust & Settlement Protocol for Agent-to-Agent Work Transactions**
 
+[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-agent--escrow.onrender.com-00f59b?style=flat-square)](https://agent-escrow.onrender.com/)
 [![Reliability Benchmark](https://img.shields.io/badge/False%20Approvals-0%20(100%25%20Safety)-00f59b?style=flat-square)](#-how-reliability-was-tested)
 [![External Apps](https://img.shields.io/badge/External%20Integrations-5%20Connected%20APIs-00f59b?style=flat-square)](#-external-applications--their-roles)
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat-square)](LICENSE)
 [![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube%20%7C%20Drive-ff3b5c?style=flat-square)](#-2-minute-demo-video)
+
+---
+
+## 🌐 Live Interactive Cloud Deployment
+- **Live Deployed App:** **[https://agent-escrow.onrender.com/](https://agent-escrow.onrender.com/)**
+- *Zero setup required: Judges can test the real-time Gemini verification and Stripe settlement directly in their browser.*
 
 ---
 
@@ -112,6 +119,16 @@ pip install -r requirements.txt
 
 ---
 
+### Option 0: Test the Live Cloud Dashboard (Zero Setup Required!)
+Judges can immediately run and inspect the end-to-end verification pipeline in the cloud:
+👉 **[https://agent-escrow.onrender.com/](https://agent-escrow.onrender.com/)**
+
+- Click **Verify PR #1 (PASS)**: Observe Gemini extracting evidence, the deterministic gate checking criteria, and Stripe capturing escrow funds live.
+- Click **Verify PR #2 (FAIL)**: Watch the gate catch incomplete unit tests and hold payment safely.
+- Click **Ambiguous (REVIEW)**: Watch the gate drop confidence below 0.70 and halt payment for human escalation.
+
+---
+
 ### Option A: Run the Deterministic Gate Unit Tests (Instant, No API Keys Required)
 Verify the core safety logic that guards payment actions:
 ```bash
@@ -173,7 +190,7 @@ python agentescrow.py fixtures/pr_fail.md
 ├── agentescrow.py          # Core pipeline: context collection, verification, gate, settlement & logging
 ├── eval_harness.py         # Automated reliability evaluation benchmark (3 scenarios)
 ├── test_gate.py            # Unit test suite for the deterministic safety gate rule
-├── serve_ledger.py         # Local HTTP server serving the interactive fintech web console
+├── serve_ledger.py         # Production HTTP server serving the interactive fintech web console
 ├── frontend/
 │   └── ledger.html         # True Black interactive dashboard with live 6-stage pipeline stepper
 ├── fixtures/
@@ -181,6 +198,9 @@ python agentescrow.py fixtures/pr_fail.md
 │   ├── pr_fail.md          # Fixture: Non-compliant pull request missing unit tests
 │   └── pr_ambiguous.md     # Fixture: Borderline pull request with subjective criteria
 ├── EVAL.md                 # Detailed evaluation methodology, scenario logs, and metrics
+├── Procfile                # Render cloud deployment process definition
+├── render.yaml             # Infrastructure-as-Code blueprint specification
+├── runtime.txt             # Python runtime specification (python-3.11.9)
 ├── LICENSE                 # MIT License
 ├── requirements.txt        # Pinned project dependencies
 └── .env.example            # Template for required environment variables
