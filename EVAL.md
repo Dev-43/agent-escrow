@@ -1,5 +1,7 @@
 # EVAL.md — Reliability Evaluation Harness & Benchmark Results
 
+> **Note on Evaluation Methodology:** The evaluation benchmark (`eval_harness.py`) intentionally runs against static, version-controlled fixtures for deterministic, reproducible reliability measurement — the same numbers every time, independent of network conditions or GitHub API availability. The live pipeline (`agentescrow.py`) separately proves the same verification and gate logic against real GitHub PRs (#1 and #2), confirmed via live console output showing actual PASS and FAIL routing, Stripe capture/cancel, and action verification.
+
 ## Objective
 Evaluate the AgentEscrow trust layer across key transactional scenarios to measure:
 - **Verdict Accuracy** (Target: 3/3, 100%)

@@ -31,6 +31,8 @@ The AI agent produces evidence; a deterministic, hardcoded rule gate decides whe
 
 ## 📊 How Reliability Was Tested
 
+The evaluation benchmark (`eval_harness.py`) intentionally runs against static, version-controlled fixtures for deterministic, reproducible reliability measurement — the same numbers every time, independent of network conditions or GitHub API availability. The live pipeline (`agentescrow.py`) separately proves the same verification and gate logic against real GitHub PRs (#1 and #2), confirmed via live console output showing actual PASS and FAIL routing, Stripe capture/cancel, and action verification.
+
 Reliability was evaluated using a reproducible benchmark harness across three core operational scenarios:
 
 | Scenario | PR Input | Expected Gate Verdict | Actual Result | Payment Action | False Approval? |
