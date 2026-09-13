@@ -582,6 +582,8 @@ def run_pipeline(
     fixture_path: Optional[str] = None,
     amount_cents: int = 5000,
     pr_number: Optional[int] = None,
+    custom_diff: Optional[str] = None,
+    custom_criteria: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
     Full end-to-end execution of the AgentEscrow pipeline:
@@ -605,7 +607,11 @@ def run_pipeline(
     else:
         pr_num = int(os.getenv("GITHUB_PR_NUMBER", "42"))
 
-    criteria = fetch_acceptance_criteria(doc_id, sa_json)
+    if custom_criteria and len(custom_criteria) > 0:
+        criteria = custom_criteria
+    else:
+        criteria = fetch_acceptance_criteria(doc_id, sa_json)
+
     agreement: TaskAgreement = {
         "task_id": task_id,
         "acceptance_criteria": criteria,
@@ -618,7 +624,10 @@ def run_pipeline(
     for i, c in enumerate(criteria, 1):
         print(f"      {i}. {c}")
 
-    pr_content = fetch_pr_content(repo, pr_num, github_token, fixture_path=fixture_path)
+    if custom_diff and len(custom_diff.strip()) > 0:
+        pr_content = custom_diff
+    else:
+        pr_content = fetch_pr_content(repo, pr_num, github_token, fixture_path=fixture_path)
     print(f"[2/5] Retrieved PR Diff/Content ({len(pr_content)} bytes)")
 
     # 2. Verification Agent

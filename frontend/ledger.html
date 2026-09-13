@@ -3,32 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgentEscrow — Trust & Settlement Layer for Agent Work</title>
+  <title>AgentEscrow — Autonomous Trust & Settlement Protocol</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #090d16;
-      --surface: #0f172a;
-      --surface-card: #131d35;
-      --surface-hover: #192644;
-      --border: #1e293b;
-      --border-focus: #3b82f6;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --accent: #3b82f6;
-      --accent-glow: rgba(59, 130, 246, 0.25);
-      --pass: #10b981;
-      --pass-bg: rgba(16, 185, 129, 0.12);
-      --pass-border: rgba(16, 185, 129, 0.3);
-      --fail: #ef4444;
-      --fail-bg: rgba(239, 68, 68, 0.12);
-      --fail-border: rgba(239, 68, 68, 0.3);
-      --review: #f59e0b;
-      --review-bg: rgba(245, 158, 11, 0.12);
-      --review-border: rgba(245, 158, 11, 0.3);
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-card: #111111;
+      --surface-hover: #171717;
+      --border: #1f1f1f;
+      --border-focus: #333333;
+      --text-main: #f5f5f5;
+      --text-muted: #8e8e8e;
+      --text-dim: #555555;
+      
+      /* Non-generic True Black + Mint/Amber/Crimson palette */
+      --accent: #00f59b;
+      --accent-dim: rgba(0, 245, 155, 0.1);
+      --accent-border: rgba(0, 245, 155, 0.25);
+      
+      --pass: #00f59b;
+      --pass-bg: rgba(0, 245, 155, 0.08);
+      --pass-border: rgba(0, 245, 155, 0.25);
+      
+      --fail: #ff3b5c;
+      --fail-bg: rgba(255, 59, 92, 0.08);
+      --fail-border: rgba(255, 59, 92, 0.25);
+      
+      --review: #ffb020;
+      --review-bg: rgba(255, 176, 32, 0.08);
+      --review-border: rgba(255, 176, 32, 0.25);
+
       --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -49,7 +56,7 @@
       margin: 0 auto;
     }
 
-    /* Header & Logo */
+    /* Header */
     header {
       display: flex;
       justify-content: space-between;
@@ -61,17 +68,17 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
     .brand-icon {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      width: 40px;
+      height: 40px;
+      background: #0f0f0f;
+      border: 1px solid var(--accent-border);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px var(--accent-glow);
     }
     .brand-title {
       font-size: 22px;
@@ -84,7 +91,7 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       padding: 3px 8px;
-      background: var(--surface-card);
+      background: #141414;
       border: 1px solid var(--border);
       border-radius: 4px;
       color: var(--accent);
@@ -94,7 +101,7 @@
     .header-status {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-size: 13px;
       color: var(--text-muted);
       font-family: var(--font-mono);
@@ -102,19 +109,19 @@
     .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid var(--pass-border);
+      gap: 7px;
+      padding: 5px 12px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-border);
       border-radius: 20px;
-      color: var(--pass);
+      color: var(--accent);
       font-size: 12px;
       font-weight: 600;
     }
     .status-dot {
-      width: 7px;
-      height: 7px;
-      background: var(--pass);
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
       border-radius: 50%;
     }
 
@@ -122,26 +129,24 @@
     .connected-apps {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 16px 20px;
       margin-bottom: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
     }
     .connected-apps-title {
-      font-size: 12px;
+      font-size: 11.5px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       color: var(--text-dim);
       font-weight: 600;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
     .apps-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 12px;
     }
     .app-link {
@@ -151,16 +156,15 @@
       padding: 10px 14px;
       background: var(--surface-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 6px;
       text-decoration: none;
       color: var(--text-main);
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       font-size: 13px;
     }
     .app-link:hover {
       background: var(--surface-hover);
-      border-color: var(--accent);
-      transform: translateY(-1px);
+      border-color: #333;
     }
     .app-info {
       display: flex;
@@ -168,33 +172,32 @@
       gap: 10px;
     }
     .app-icon { font-size: 16px; }
-    .app-name { font-weight: 600; color: #fff; }
+    .app-name { font-weight: 600; color: #fff; font-size: 13px; }
     .app-desc { font-size: 11px; color: var(--text-muted); }
     .app-badge {
       font-size: 10px;
       font-family: var(--font-mono);
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.05);
       color: var(--text-muted);
     }
 
-    /* Live Interactive Trigger Console */
+    /* Interactive Pipeline Execution Console */
     .console-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 24px;
       margin-bottom: 28px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
     }
     .console-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 18px;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
     }
     .console-title {
       font-size: 16px;
@@ -208,50 +211,60 @@
       font-size: 13px;
       color: var(--text-muted);
       margin-top: 4px;
+      max-width: 600px;
     }
+
+    /* Scenarios & Trigger Bar */
     .actions-bar {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       align-items: center;
     }
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-size: 13.5px;
+      gap: 7px;
+      padding: 9px 16px;
+      border-radius: 6px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       border: 1px solid transparent;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       font-family: var(--font-ui);
     }
     .btn:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
       pointer-events: none;
     }
     .btn-pass {
-      background: #065f46;
-      color: #34d399;
-      border-color: rgba(52, 211, 153, 0.3);
+      background: rgba(0, 245, 155, 0.1);
+      color: var(--pass);
+      border-color: var(--pass-border);
     }
     .btn-pass:hover {
-      background: #047857;
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      background: rgba(0, 245, 155, 0.18);
+      border-color: var(--pass);
     }
     .btn-fail {
-      background: #881337;
-      color: #f87171;
-      border-color: rgba(248, 113, 113, 0.3);
+      background: rgba(255, 59, 92, 0.1);
+      color: var(--fail);
+      border-color: var(--fail-border);
     }
     .btn-fail:hover {
-      background: #9f1239;
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      background: rgba(255, 59, 92, 0.18);
+      border-color: var(--fail);
+    }
+    .btn-review {
+      background: rgba(255, 176, 32, 0.1);
+      color: var(--review);
+      border-color: var(--review-border);
+    }
+    .btn-review:hover {
+      background: rgba(255, 176, 32, 0.18);
+      border-color: var(--review);
     }
     .btn-secondary {
       background: var(--surface-card);
@@ -260,46 +273,128 @@
     }
     .btn-secondary:hover {
       background: var(--surface-hover);
-      border-color: var(--text-muted);
+      border-color: #333;
     }
 
-    .pr-custom-input {
+    /* Custom PR input */
+    .pr-custom-box {
       display: flex;
       align-items: center;
       gap: 8px;
       background: var(--surface-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px 8px;
+      border-radius: 6px;
+      padding: 4px 10px;
     }
-    .pr-custom-input input {
+    .pr-custom-box input {
       background: transparent;
       border: none;
       color: #fff;
       font-family: var(--font-mono);
       font-size: 13px;
-      width: 50px;
+      width: 44px;
       text-align: center;
       outline: none;
     }
-    .pr-custom-input label {
+    .pr-custom-box label {
       font-size: 12px;
       color: var(--text-dim);
       font-family: var(--font-mono);
     }
 
+    /* Custom Diff & Judge Simulator Drawer */
+    .custom-simulator-toggle {
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      font-family: var(--font-ui);
+    }
+    .custom-simulator-toggle:hover { color: #fff; }
+    .custom-simulator-panel {
+      margin-top: 12px;
+      background: #080808;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: none;
+    }
+    .custom-simulator-panel.active { display: block; }
+    .simulator-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 768px) {
+      .simulator-grid { grid-template-columns: 1fr; }
+    }
+    .simulator-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .simulator-field label {
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .simulator-field textarea {
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #e5e5e5;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 10px;
+      height: 110px;
+      resize: vertical;
+      outline: none;
+    }
+    .simulator-field textarea:focus { border-color: #333; }
+    .simulator-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .preset-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .chip-btn {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: #141414;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .chip-btn:hover { color: #fff; border-color: #444; }
+
     /* Pipeline Stepper */
     .stepper-container {
-      margin-top: 20px;
+      margin-top: 22px;
       padding-top: 20px;
       border-top: 1px solid var(--border);
     }
     .stepper-label {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       margin-bottom: 12px;
     }
     .stepper-grid {
@@ -310,17 +405,17 @@
     .step-box {
       background: var(--surface-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 10px 12px;
       font-size: 12px;
       display: flex;
       flex-direction: column;
       gap: 4px;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
     }
     .step-box.active {
-      border-color: var(--accent);
-      background: rgba(59, 130, 246, 0.1);
+      border-color: #444;
+      background: #161616;
     }
     .step-box.success {
       border-color: var(--pass-border);
@@ -329,6 +424,10 @@
     .step-box.failed {
       border-color: var(--fail-border);
       background: var(--fail-bg);
+    }
+    .step-box.review {
+      border-color: var(--review-border);
+      background: var(--review-bg);
     }
     .step-title {
       font-weight: 600;
@@ -343,13 +442,13 @@
       font-family: var(--font-mono);
     }
 
-    /* Live Output Result Drawer */
+    /* Live Result Drawer */
     .live-result {
       margin-top: 20px;
-      background: rgba(11, 17, 32, 0.8);
+      background: #080808;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 16px;
+      padding: 18px;
       display: none;
     }
     .live-result.visible { display: block; }
@@ -359,14 +458,14 @@
       align-items: center;
       margin-bottom: 12px;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
     .verdict-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 4px 12px;
-      border-radius: 6px;
+      border-radius: 4px;
       font-weight: 700;
       font-size: 13px;
       font-family: var(--font-mono);
@@ -378,7 +477,7 @@
 
     .result-reason {
       font-size: 13.5px;
-      color: var(--text-main);
+      color: #fff;
       margin-bottom: 14px;
     }
     .result-evidence-grid {
@@ -425,23 +524,23 @@
     }
     .action-tag.verified { color: var(--pass); }
 
-    /* Summary Metric Cards */
+    /* Metrics Row */
     .metrics-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 28px;
     }
     .metric-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 18px 20px;
     }
     .metric-title {
-      font-size: 12px;
+      font-size: 11.5px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       color: var(--text-dim);
       font-weight: 600;
       margin-bottom: 6px;
@@ -459,11 +558,11 @@
       margin-top: 4px;
     }
 
-    /* Ledger History Section */
+    /* Ledger History */
     .ledger-section {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 24px;
     }
     .ledger-header {
@@ -475,15 +574,15 @@
       gap: 12px;
     }
     .ledger-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       color: #fff;
     }
     .filter-tabs {
       display: flex;
-      background: var(--surface-card);
+      background: #080808;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 3px;
       gap: 4px;
     }
@@ -494,16 +593,15 @@
       font-family: var(--font-ui);
       font-size: 12.5px;
       font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 6px;
+      padding: 5px 12px;
+      border-radius: 4px;
       cursor: pointer;
       transition: all 0.15s ease;
     }
     .tab-btn:hover { color: #fff; }
     .tab-btn.active {
-      background: var(--surface-hover);
+      background: #171717;
       color: #fff;
-      border: 1px solid var(--border-focus);
     }
     .tab-btn .badge-count {
       font-family: var(--font-mono);
@@ -512,7 +610,7 @@
       margin-left: 4px;
     }
 
-    /* Ledger Entries Table */
+    /* Entries Container */
     .entries-container {
       display: flex;
       flex-direction: column;
@@ -521,16 +619,16 @@
     .entry-card {
       background: var(--surface-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px 20px;
+      border-radius: 6px;
+      padding: 16px 18px;
       display: grid;
-      grid-template-columns: 100px 1fr 200px;
-      gap: 20px;
+      grid-template-columns: 95px 1fr 200px;
+      gap: 18px;
       align-items: center;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
     .entry-card:hover {
-      border-color: rgba(255, 255, 255, 0.15);
+      border-color: #333;
       background: var(--surface-hover);
     }
     .entry-card.hidden { display: none; }
@@ -576,7 +674,7 @@
       gap: 6px;
     }
     .entry-payment {
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 700;
       font-family: var(--font-mono);
     }
@@ -594,15 +692,15 @@
     }
     .meter-bar {
       width: 70px;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 3px;
+      height: 4px;
+      background: #222;
+      border-radius: 2px;
       overflow: hidden;
     }
     .meter-fill {
       height: 100%;
       background: var(--pass);
-      border-radius: 3px;
+      border-radius: 2px;
     }
     .meter-fill.fail { background: var(--fail); }
     .meter-fill.review { background: var(--review); }
@@ -630,7 +728,7 @@
       padding-top: 20px;
     }
     footer a { color: var(--text-muted); text-decoration: none; }
-    footer a:hover { color: var(--text-main); }
+    footer a:hover { color: #fff; }
   </style>
 </head>
 <body>
@@ -641,7 +739,7 @@
   <header>
     <div class="brand">
       <div class="brand-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
       </div>
@@ -651,14 +749,14 @@
           <span class="brand-tag">Deterministic Gate</span>
         </div>
         <div style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
-          Trust & settlement layer for autonomous agent-to-agent work transactions
+          Autonomous trust & settlement protocol for agent-to-agent work transactions
         </div>
       </div>
     </div>
     <div class="header-status">
       <div class="status-badge">
         <span class="status-dot"></span>
-        <span>LIVE RUNTIME</span>
+        <span>PROTOCOL ACTIVE</span>
       </div>
     </div>
   </header>
@@ -666,8 +764,8 @@
   <!-- Connected External Apps Toolbar -->
   <div class="connected-apps">
     <div class="connected-apps-title">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-      Connected External Systems (5 Direct Integrations)
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      Connected External Systems (5 Direct API Integrations)
     </div>
     <div class="apps-grid" id="appsGrid">
       <a class="app-link" id="linkGoogleDoc" href="https://docs.google.com/document/d/1HuV_EGbyLadPlwPYWHDyjT9hIwWHEhG6HXzpXLyDYQ4/edit" target="_blank">
@@ -711,7 +809,7 @@
             <div class="app-desc">Audit Ledger</div>
           </div>
         </div>
-        <span class="app-badge">Audit</span>
+        <span class="app-badge">Ledger</span>
       </a>
 
       <a class="app-link" id="linkStripe" href="https://dashboard.stripe.com/test/payments" target="_blank">
@@ -719,7 +817,7 @@
           <span class="app-icon">💳</span>
           <div>
             <div class="app-name">Stripe Settlement</div>
-            <div class="app-desc">Test PaymentIntents</div>
+            <div class="app-desc">Escrow Hold/Release</div>
           </div>
         </div>
         <span class="app-badge">Escrow</span>
@@ -727,38 +825,81 @@
     </div>
   </div>
 
-  <!-- Interactive Live Trigger Console -->
+  <!-- Interactive Live Execution Console -->
   <div class="console-card">
     <div class="console-header">
       <div>
         <div class="console-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Live Pipeline Execution Console
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Live Verification & Deterministic Gate Console
         </div>
         <div class="console-subtitle">
-          Trigger live end-to-end verification directly against GitHub, Google Docs, Gemini, Deterministic Gate, Stripe, Slack, and Sheets.
+          Test any scenario or custom input. The AI model extracts evidence; the deterministic gate decides payment.
         </div>
       </div>
+
+      <!-- Scenarios Bar -->
       <div class="actions-bar">
-        <button class="btn btn-pass" id="btnRunPass" onclick="runLiveVerification(1)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Verify PR #1 (Live PASS)
+        <button class="btn btn-pass" id="btnRunPass" onclick="triggerScenario('pass')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Verify PR #1 (PASS)
         </button>
-        <button class="btn btn-fail" id="btnRunFail" onclick="runLiveVerification(2)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Verify PR #2 (Live FAIL)
+        <button class="btn btn-fail" id="btnRunFail" onclick="triggerScenario('fail')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Verify PR #2 (FAIL)
         </button>
-        <div class="pr-custom-input">
+        <button class="btn btn-review" id="btnRunAmbiguous" onclick="triggerScenario('ambiguous')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Ambiguous (REVIEW)
+        </button>
+
+        <div class="pr-custom-box">
           <label for="customPrInput">PR #</label>
           <input type="number" id="customPrInput" value="1" min="1" max="999">
-          <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="runLiveVerification(parseInt(document.getElementById('customPrInput').value) || 1)">
-            Run
+          <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 11.5px;" onclick="triggerCustomPR()">
+            Fetch
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Stepper Progress Tracker -->
+    <!-- Collapsible Judge / Custom Diff Simulator -->
+    <button class="custom-simulator-toggle" onclick="toggleSimulator()">
+      <span id="simulatorToggleIcon">▶</span>
+      <span>Inspect Arbitrary PR Diff / Custom Criteria Simulator (Judge Sandbox)</span>
+    </button>
+
+    <div class="custom-simulator-panel" id="simulatorPanel">
+      <div class="simulator-grid">
+        <div class="simulator-field">
+          <label>
+            <span>CUSTOM ACCEPTANCE CRITERIA (1 per line)</span>
+            <span style="color:var(--text-dim);">Google Doc Truth</span>
+          </label>
+          <textarea id="customCriteriaInput" placeholder="1. TokenBucketRateLimiter class implemented&#10;2. Rate limit middleware returns HTTP 429&#10;3. Unit test coverage for consume and refill&#10;4. Zero unapproved dependencies added"></textarea>
+        </div>
+        <div class="simulator-field">
+          <label>
+            <span>CUSTOM PR CODE DIFF / SUBMITTED WORK</span>
+            <span style="color:var(--text-dim);">GitHub Artifact</span>
+          </label>
+          <textarea id="customDiffInput" placeholder="Paste any unified git diff or implementation code to evaluate..."></textarea>
+        </div>
+      </div>
+      <div class="simulator-actions">
+        <div class="preset-chips">
+          <span style="font-size:11px; color:var(--text-dim); margin-right:4px;">Quick Pre-fills:</span>
+          <button class="chip-btn" onclick="prefillSimulator('pass')">Full Compliance</button>
+          <button class="chip-btn" onclick="prefillSimulator('missing_tests')">Missing Tests</button>
+          <button class="chip-btn" onclick="prefillSimulator('bad_dependency')">Unapproved Dep</button>
+        </div>
+        <button class="btn btn-secondary" style="font-size:12px; padding:6px 14px; border-color:var(--accent-border); color:var(--accent);" onclick="triggerCustomDiff()">
+          Execute Custom Verification & Safety Gate
+        </button>
+      </div>
+    </div>
+
+    <!-- Stepper Tracker -->
     <div class="stepper-container">
       <div class="stepper-label">Pipeline Stage Progression</div>
       <div class="stepper-grid">
@@ -815,7 +956,7 @@
   <!-- Metric Summary Cards -->
   <div class="metrics-row">
     <div class="metric-card">
-      <div class="metric-title">Transactions Checked</div>
+      <div class="metric-title">Transactions Evaluated</div>
       <div class="metric-num" id="totalCount">4</div>
       <div class="metric-desc">Autonomous pull request evaluations</div>
     </div>
@@ -832,7 +973,7 @@
     <div class="metric-card">
       <div class="metric-title">Closed-Loop Verification</div>
       <div class="metric-num" style="color:var(--accent);">100%</div>
-      <div class="metric-desc">All Stripe calls read-back verified</div>
+      <div class="metric-desc">All external actions read-back confirmed</div>
     </div>
   </div>
 
@@ -875,7 +1016,28 @@
 <script>
   let isRunning = false;
 
-  // Load config links
+  function toggleSimulator() {
+    const p = document.getElementById('simulatorPanel');
+    const icon = document.getElementById('simulatorToggleIcon');
+    const isOpen = p.classList.toggle('active');
+    icon.textContent = isOpen ? '▼' : '▶';
+  }
+
+  function prefillSimulator(type) {
+    const critEl = document.getElementById('customCriteriaInput');
+    const diffEl = document.getElementById('customDiffInput');
+
+    critEl.value = `1. TokenBucketRateLimiter class implemented with capacity & refill\n2. Rate limit middleware enforces HTTP 429 status on depletion\n3. Comprehensive unit test suite covering consumption & refill math\n4. Zero unapproved external dependencies added`;
+
+    if (type === 'pass') {
+      diffEl.value = `diff --git a/api/rate_limiter.py b/api/rate_limiter.py\nnew file mode 100644\n+class TokenBucketRateLimiter:\n+    def __init__(self, capacity, refill_rate):\n+        self.capacity = capacity\n+        self.tokens = capacity\n+    def consume(self, amount=1.0):\n+        if self.tokens >= amount:\n+            self.tokens -= amount\n+            return True\n+        return False\n+def rate_limit(limiter):\n+    def decorator(fn):\n+        def wrapper(*args, **kwargs):\n+            if not limiter.consume():\n+                return {"error": "Rate limit exceeded"}, 429\n+            return fn(*args, **kwargs)\n+        return wrapper\n+    return decorator\n\ndiff --git a/tests/test_rate_limiter.py b/tests/test_rate_limiter.py\nnew file mode 100644\n+import unittest\n+class TestLimiter(unittest.TestCase):\n+    def test_consume(self):\n+        limiter = TokenBucketRateLimiter(5, 1.0)\n+        self.assertTrue(limiter.consume())`;
+    } else if (type === 'missing_tests') {
+      diffEl.value = `diff --git a/api/rate_limiter.py b/api/rate_limiter.py\nnew file mode 100644\n+class TokenBucketRateLimiter:\n+    def __init__(self, capacity):\n+        self.capacity = capacity\n\ndiff --git a/tests/test_rate_limiter.py b/tests/test_rate_limiter.py\nnew file mode 100644\n+# TODO: Add comprehensive unit tests here`;
+    } else if (type === 'bad_dependency') {
+      diffEl.value = `diff --git a/requirements.txt b/requirements.txt\n+unapproved-heavy-crypto==9.9.9\n\ndiff --git a/api/rate_limiter.py b/api/rate_limiter.py\n+import unapproved_heavy_crypto\n+class TokenBucketRateLimiter: pass`;
+    }
+  }
+
   async function loadConfig() {
     try {
       const res = await fetch('/api/config');
@@ -887,12 +1049,9 @@
         if (cfg.pr_2_url) document.getElementById('linkPrFail').href = cfg.pr_2_url;
         if (cfg.stripe_url) document.getElementById('linkStripe').href = cfg.stripe_url;
       }
-    } catch(e) {
-      console.log('Using default config links');
-    }
+    } catch(e) {}
   }
 
-  // Load live ledger data
   async function loadLedger() {
     try {
       const res = await fetch('/api/ledger');
@@ -969,12 +1128,9 @@
       document.getElementById('countFail').textContent = failCount;
       document.getElementById('countReview').textContent = reviewCount;
       bindFilterTabs();
-    } catch(e) {
-      console.log('Ledger fetch error:', e);
-    }
+    } catch(e) {}
   }
 
-  // Filter tabs
   function bindFilterTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     const cards = document.querySelectorAll('.entry-card');
@@ -996,24 +1152,44 @@
     });
   }
 
-  // Run Live Verification Pipeline Trigger
-  async function runLiveVerification(prNumber) {
+  function triggerScenario(sc) {
+    executePipeline({ scenario: sc });
+  }
+
+  function triggerCustomPR() {
+    const pr = parseInt(document.getElementById('customPrInput').value) || 1;
+    executePipeline({ pr_number: pr });
+  }
+
+  function triggerCustomDiff() {
+    const rawCrit = document.getElementById('customCriteriaInput').value;
+    const diff = document.getElementById('customDiffInput').value;
+    const critList = rawCrit.split('\n').map(c => c.trim()).filter(c => c.length > 0);
+    executePipeline({
+      custom_diff: diff,
+      custom_criteria: critList.length > 0 ? critList : null,
+      task_id: `task_sim_${Date.now()}`
+    });
+  }
+
+  async function executePipeline(payload) {
     if (isRunning) return;
     isRunning = true;
 
-    // Reset Stepper
+    // Reset Buttons & Drawer
     document.getElementById('btnRunPass').disabled = true;
     document.getElementById('btnRunFail').disabled = true;
+    document.getElementById('btnRunAmbiguous').disabled = true;
     const drawer = document.getElementById('liveResultDrawer');
     drawer.classList.remove('visible');
 
     const steps = [
-      { el: document.getElementById('step1'), status: document.getElementById('step1Status'), text: 'Fetching Doc criteria...' },
-      { el: document.getElementById('step2'), status: document.getElementById('step2Status'), text: 'Reading PR diff...' },
-      { el: document.getElementById('step3'), status: document.getElementById('step3Status'), text: 'Extracting evidence...' },
-      { el: document.getElementById('step4'), status: document.getElementById('step4Status'), text: 'Evaluating safety gate...' },
-      { el: document.getElementById('step5'), status: document.getElementById('step5Status'), text: 'Stripe settlement...' },
-      { el: document.getElementById('step6'), status: document.getElementById('step6Status'), text: 'Appending audit record...' },
+      { el: document.getElementById('step1'), status: document.getElementById('step1Status') },
+      { el: document.getElementById('step2'), status: document.getElementById('step2Status') },
+      { el: document.getElementById('step3'), status: document.getElementById('step3Status') },
+      { el: document.getElementById('step4'), status: document.getElementById('step4Status') },
+      { el: document.getElementById('step5'), status: document.getElementById('step5Status') },
+      { el: document.getElementById('step6'), status: document.getElementById('step6Status') },
     ];
 
     steps.forEach(s => {
@@ -1021,23 +1197,21 @@
       s.status.textContent = 'Queued...';
     });
 
-    // Step 1: Google Doc
     steps[0].el.className = 'step-box active';
-    steps[0].status.textContent = 'Fetching 4 criteria...';
+    steps[0].status.textContent = payload.custom_criteria ? 'Reading custom criteria...' : 'Fetching Google Doc criteria...';
 
     try {
       const responsePromise = fetch('/api/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pr_number: prNumber })
+        body: JSON.stringify(payload)
       });
 
-      // Animate steps concurrently while waiting for response
       setTimeout(() => {
         steps[0].el.className = 'step-box success';
-        steps[0].status.textContent = '✓ 4 Criteria Loaded';
+        steps[0].status.textContent = '✓ Criteria Loaded';
         steps[1].el.className = 'step-box active';
-        steps[1].status.textContent = `Fetching PR #${prNumber} from GitHub...`;
+        steps[1].status.textContent = payload.custom_diff ? 'Parsing diff artifact...' : 'Fetching PR diff from GitHub...';
       }, 700);
 
       setTimeout(() => {
@@ -1051,7 +1225,7 @@
       const data = await res.json();
 
       if (!data.success) {
-        alert('Verification failed: ' + (data.error || 'Unknown error'));
+        alert('Verification error: ' + (data.error || 'Pipeline execution failed'));
         steps.forEach(s => { s.el.className = 'step-box'; s.status.textContent = 'Failed'; });
         return;
       }
@@ -1062,23 +1236,31 @@
       steps[2].el.className = 'step-box success';
       steps[2].status.textContent = `✓ Confidence: ${result.verification.confidence.toFixed(2)}`;
 
-      steps[3].el.className = `step-box ${v === 'pass' ? 'success' : 'failed'}`;
-      steps[3].status.textContent = `Verdict: ${v.toUpperCase()}`;
+      if (v === 'pass') {
+        steps[3].el.className = 'step-box success';
+        steps[3].status.textContent = 'Verdict: PASS (Release)';
+      } else if (v === 'fail') {
+        steps[3].el.className = 'step-box failed';
+        steps[3].status.textContent = 'Verdict: FAIL (Hold)';
+      } else {
+        steps[3].el.className = 'step-box review';
+        steps[3].status.textContent = 'Verdict: REVIEW (Escalate)';
+      }
 
       steps[4].el.className = 'step-box success';
-      const stripeAct = result.actions.find(a => a.action.includes('stripe')) || {};
+      const stripeAct = result.actions.find(a => a.action && a.action.includes('stripe')) || {};
       steps[4].status.textContent = `✓ Stripe: ${stripeAct.action || 'verified'}`;
 
       steps[5].el.className = 'step-box success';
       steps[5].status.textContent = '✓ Logged & Verified';
 
-      // Populate Live Result Drawer
+      // Populate Drawer
       const pill = document.getElementById('resultVerdictPill');
       pill.className = `verdict-pill ${v}`;
       pill.textContent = v.toUpperCase();
 
-      document.getElementById('resultTaskTitle').textContent = `PR #${prNumber} — ${result.agreement.task_id}`;
-      document.getElementById('resultConfidence').textContent = `Confidence: ${(result.verification.confidence * 100).toFixed(0)}% (Gate Action: ${result.gate_decision.payment_action.toUpperCase()})`;
+      document.getElementById('resultTaskTitle').textContent = `${result.agreement.task_id}`;
+      document.getElementById('resultConfidence').textContent = `Confidence: ${(result.verification.confidence * 100).toFixed(0)}% | Gate Action: ${result.gate_decision.payment_action.toUpperCase()}`;
       document.getElementById('resultReasonText').textContent = `Deterministic Rule: ${result.gate_decision.reason}`;
 
       const evContainer = document.getElementById('resultEvidenceContainer');
@@ -1103,8 +1285,6 @@
       `).join('');
 
       drawer.classList.add('visible');
-
-      // Refresh Ledger
       await loadLedger();
 
     } catch(err) {
@@ -1114,10 +1294,10 @@
       isRunning = false;
       document.getElementById('btnRunPass').disabled = false;
       document.getElementById('btnRunFail').disabled = false;
+      document.getElementById('btnRunAmbiguous').disabled = false;
     }
   }
 
-  // Init
   loadConfig();
   loadLedger();
 </script>

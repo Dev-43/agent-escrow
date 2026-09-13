@@ -178,11 +178,28 @@ class LedgerHandler(SimpleHTTPRequestHandler):
 
             pr_number = payload.get("pr_number")
             fixture = payload.get("fixture")
+            scenario = payload.get("scenario")
+            custom_diff = payload.get("custom_diff")
+            custom_criteria = payload.get("custom_criteria")
             task_id = payload.get("task_id")
 
-            pr_num_int = int(pr_number) if pr_number else 1
-            if not task_id:
-                task_id = f"task_pr_{pr_num_int:03d}_{int(time.time())}"
+            if scenario == "ambiguous":
+                fixture = "fixtures/pr_ambiguous.md"
+                pr_num_int = 44
+                if not task_id:
+                    task_id = f"task_ambiguous_{int(time.time())}"
+            elif scenario == "pass":
+                pr_num_int = 1
+                if not task_id:
+                    task_id = f"task_pass_pr1_{int(time.time())}"
+            elif scenario == "fail":
+                pr_num_int = 2
+                if not task_id:
+                    task_id = f"task_fail_pr2_{int(time.time())}"
+            else:
+                pr_num_int = int(pr_number) if pr_number else 1
+                if not task_id:
+                    task_id = f"task_custom_{pr_num_int}_{int(time.time())}"
 
             import agentescrow
             try:
@@ -190,7 +207,9 @@ class LedgerHandler(SimpleHTTPRequestHandler):
                     task_id=task_id,
                     fixture_path=fixture,
                     amount_cents=5000,
-                    pr_number=pr_num_int
+                    pr_number=pr_num_int,
+                    custom_diff=custom_diff,
+                    custom_criteria=custom_criteria,
                 )
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
