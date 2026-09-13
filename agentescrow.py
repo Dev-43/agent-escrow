@@ -222,6 +222,31 @@ Output:
   "confidence": 0.92,
   "raw_reasoning": "Criterion 2 failed because no actual unit tests were written."
 }
+
+Example 3: REVIEW (Low Confidence)
+Input:
+Criteria:
+- "Implement a TokenBucketRateLimiter class"
+- "Ensure optimal enterprise concurrency trade-offs under peak traffic"
+PR Content: TokenBucketRateLimiter implemented with a lock, but traffic performance cannot be measured from diff.
+Output:
+{
+  "task_id": "task_demo_03",
+  "evidence": [
+    {
+      "criterion": "Implement a TokenBucketRateLimiter class",
+      "met": true,
+      "evidence_text": "Class TokenBucketRateLimiter exists in api/rate_limiter.py"
+    },
+    {
+      "criterion": "Ensure optimal enterprise concurrency trade-offs under peak traffic",
+      "met": true,
+      "evidence_text": "Code uses threading.Lock, but peak traffic latency and optimal trade-offs are unverifiable from static diff alone without load telemetry"
+    }
+  ],
+  "confidence": 0.60,
+  "raw_reasoning": "Subjective criterion cannot be verified with certainty from static code diff, resulting in low confidence (0.60)."
+}
 """
 
 def run_verification_agent(agreement: TaskAgreement, pr_content: str, api_key: Optional[str]) -> VerificationResult:
@@ -237,8 +262,11 @@ You are an impartial Verification Agent. You must independently evaluate the cla
 Instructions:
 1. Evaluate each of the {len(agreement['acceptance_criteria'])} criteria independently. Do not skip any.
 2. For each criterion, state whether it is met (true/false) and provide exact evidence from the PR diff.
-3. Provide a confidence score between 0.0 and 1.0 representing your lowest confidence across the evaluated criteria.
-4. Output STRICT JSON conforming to the schema below.
+3. Assess confidence rigorously:
+   - If ALL criteria are unambiguously, objectively verified by concrete code/tests in the diff: confidence must be high (0.85 - 0.99).
+   - If ANY criterion is subjective, speculative, borderline, or cannot be proven conclusively from the diff alone (such as performance claims, architectural optimality, or enterprise standards): set confidence strictly below 0.70 (e.g. 0.55 - 0.65).
+   - Overall confidence MUST equal the lowest confidence across all individual criteria.
+4. Output STRICT JSON conforming to the schema.
 
 Few-Shot Examples:
 {FEW_SHOT_PROMPT_EXAMPLES}
