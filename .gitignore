@@ -36,3 +36,9 @@ build/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Media & Recordings
+*.mp4
+*.mov
+*.webm
+*.mkv
