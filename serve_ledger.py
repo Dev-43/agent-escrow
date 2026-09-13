@@ -15,7 +15,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 load_dotenv()
 
-PORT = 8080
+PORT = int(os.getenv("PORT", "5000"))
 
 def get_live_ledger_data():
     sheet_id = os.getenv("SHEET_ID")
