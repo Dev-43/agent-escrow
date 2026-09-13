@@ -130,7 +130,10 @@ class LedgerHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(data).encode("utf-8"))
         elif parsed.path == "/" or parsed.path == "/index.html":
-            self.path = "/ledger.html"
+            if os.path.exists("frontend/ledger.html"):
+                self.path = "/frontend/ledger.html"
+            else:
+                self.path = "/ledger.html"
             return super().do_GET()
         else:
             return super().do_GET()
