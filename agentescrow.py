@@ -295,8 +295,8 @@ Claimed Work (PR Description & Unified Diff):
             "response_mime_type": "application/json",
         }
 
-        # Try active Gemini models
-        models_to_try = ["gemini-3.6-flash", "gemini-3.8-flash", "gemini-2.5-flash-lite", "gemini-flash-latest"]
+        # Primary fast resolvable models
+        models_to_try = ["gemini-flash-latest", "gemini-3.6-flash"]
         for attempt in range(1, max_retries + 1):
             for model_name in models_to_try:
                 try:
@@ -655,7 +655,7 @@ def run_pipeline(
     }
 
 if __name__ == "__main__":
-    # Command line argument for quick fixture testing
-    fixture = sys.argv[1] if len(sys.argv) > 1 else "fixtures/pr_pass.md"
-    task_arg = "task_pass_001" if "pass" in fixture else "task_fail_002"
+    # If a fixture path is passed, use it; otherwise fetch live PR from GitHub API
+    fixture = sys.argv[1] if len(sys.argv) > 1 else None
+    task_arg = "task_live_pr_001" if not fixture else ("task_pass_001" if "pass" in fixture else "task_fail_002")
     run_pipeline(task_id=task_arg, fixture_path=fixture)
